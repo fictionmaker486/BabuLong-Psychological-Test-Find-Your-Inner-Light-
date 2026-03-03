@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>巴部農 | 尋找你的內在微光</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif TC', serif;
+            background-color: #040d08;
+            color: #e5e7eb;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        /* Background Forest Image with overlay */
+        .bg-forest {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: -2;
+        }
+        
+        .bg-gradient-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, rgba(4, 13, 8, 0.7), rgba(4, 13, 8, 1));
+            z-index: -1;
+        }
+
+        /* Glassmorphism UI */
+        .glass-panel {
+            background: rgba(10, 25, 16, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button:hover {
+            background: rgba(234, 179, 8, 0.15);
+            border-color: rgba(234, 179, 8, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(234, 179, 8, 0.1);
+        }
+
+        /* Text Effects */
+        .glow-text {
+            text-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
+        }
+        
+        .title-gradient {
+            background: linear-gradient(135deg, #fef08a 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Firefly Animations */
+        .firefly {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #fde047;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px #facc15, 0 0 20px 4px #ca8a04;
+            opacity: 0;
+            pointer-events: none;
+            animation: float 10s infinite ease-in-out, flash 4s infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(20px, -30px); }
+            50% { transform: translate(-10px, -60px); }
+            75% { transform: translate(-30px, -20px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Fade transitions */
+        .fade-transition {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+        }
+        .fade-in {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
+
+    <!-- Background Elements -->
+    <div class="bg-forest"></div>
+    <div class="bg-gradient-overlay"></div>
+    <div id="fireflies-container" class="fixed inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- Main App Container -->
+    <div id="app" class="relative z-10 w-full max-w-xl mx-auto">
+        <!-- Views will be injected here by JS -->
+    </div>
+
+    <script>
+        // Data Structures
+        const questions = [
+            {
+                question: "終於結束繁忙的商務週，你的私人時光（Me Time）最理想的開場白是？",
+                options: [
+                    { key: "A", text: "翻開一本泛黃的詩集，在靜謐書房感受文字的重量。" },
+                    { key: "B", text: "對著鏡子進行深度保養，享受精華滲透肌膚的瞬間。" },
+                    { key: "C", text: "穿上跑鞋，到遠離塵囂的山徑享受大自然的純物理呼吸。" },
+                    { key: "D", text: "準備一組精品咖啡器具，細磨咖啡豆感受香氣的綻放。" }
+                ]
+            },
+            {
+                question: "若你正處於一片漆黑的水源地森林，前方出現微光，你最希望那是？",
+                options: [
+                    { key: "A", text: "沉睡千年的星火，帶著歷史沉澱出的智慧。" },
+                    { key: "B", text: "如鑽石般剔透的朝露，映照出健康的光采。" },
+                    { key: "C", text: "堅實且乾淨的岩石縫隙，流淌出清澈的湧泉。" },
+                    { key: "D", text: "一場森林晚宴的燭光，邀請你與靈魂對話。" }
+                ]
+            },
+            {
+                question: "挑選日常飲用水時，最能打動你的關鍵是？",
+                options: [
+                    { key: "A", text: "它的歷史與故事，例如歷經千年的醞釀。" },
+                    { key: "B", text: "它的美容與代謝價值，能由內而外保養。" },
+                    { key: "C", text: "它的純淨與安全，零污染、零塑化的絕對安心。" },
+                    { key: "D", text: "它的口感與層次，能完美搭配精緻餐點或好茶。" }
+                ]
+            },
+            {
+                question: "如果要把你的靈魂狀態比喻成一種自然景觀，你覺得是？",
+                options: [
+                    { key: "A", text: "深藏地底、安靜流動且不受外界打擾的古老岩層。" },
+                    { key: "B", text: "早晨陽光下，閃耀著水感與晶瑩剔透光澤的葉片。" },
+                    { key: "C", text: "經歷火山高溫淬鍊後，剛毅、純粹且不拔的玄武岩。" },
+                    { key: "D", text: "映照著繁星、微風吹拂，倒影迷人且豐富的平靜湖面。" }
+                ]
+            }
+        ];
+
+        const resultsData = {
+            "A": {
+                title: "千年智者之光",
+                symbol: "黑翅螢 ✦ 4500年水齡",
+                desc: "你追求深度與穩定。不愛喧囂，深信好東西需要時間的累積。就像巴部農經歷 4500 年的地層靜置，你的靈魂帶著歷史沉澱出的純淨與智慧。",
+                ctaText: "領取專屬【WISDOM100】折扣碼",
+                product: "推薦：1250ml 慢飲典藏組",
+                color: "text-amber-100"
+            },
+            "B": {
+                title: "水中黃金之光",
+                symbol: "大端黑螢 ✦ 偏硅酸美容",
+                desc: "你優雅且精緻。對生活品質有極高標準，注重每一吋細節的內外保養。你需要的是富含「偏硅酸」的液態妝容，讓每一滴微光成為你的保養品。",
+                ctaText: "領取專屬【GLOW2026】折扣碼",
+                product: "推薦：330ml 質感隨行瓶",
+                color: "text-yellow-300"
+            },
+            "C": {
+                title: "岩層過濾之光",
+                symbol: "山窗螢 ✦ 玄武岩純淨",
+                desc: "你純粹且剛毅。討厭任何虛假與污染，對「安全與真實」有著毫不妥協的堅持。歷經火山玄武岩層層過濾的純粹，最能呼應你對生活的最高標準。",
+                ctaText: "查看【年購種樹計畫】永續方案",
+                product: "推薦：你喝水，我種樹 年購組",
+                color: "text-emerald-300"
+            },
+            "D": {
+                title: "感官美學之光",
+                symbol: "黃緣螢 ✦ 品水師推薦",
+                desc: "你是天生的生活策展人。熱愛 Fine Dining 與層次感，懂得用細節提升生命質感。能激發咖啡與餐飲回甘層次的頂級水體，是你的餐桌必備。",
+                ctaText: "領取專屬【ART88】品味收藏價",
+                product: "推薦：達文西聯名限定版 850ml",
+                color: "text-orange-300"
+            }
+        };
+
+        // State
+        let currentQuestionIndex = 0;
+        let scores = { A: 0, B: 0, C: 0, D: 0 };
+        const appContainer = document.getElementById('app');
+
+        // Initialize Fireflies
+        function createFireflies() {
+            const container = document.getElementById('fireflies-container');
+            const fireflyCount = window.innerWidth < 640 ? 25 : 50;
+            
+            for (let i = 0; i < fireflyCount; i++) {
+                const firefly = document.createElement('div');
+                firefly.className = 'firefly';
+                
+                // Randomize positions, delays, and durations
+                const startX = Math.random() * 100;
+                const startY = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const durationFloat = 8 + Math.random() * 6;
+                const durationFlash = 3 + Math.random() * 4;
+                
+                firefly.style.left = `${startX}vw`;
+                firefly.style.top = `${startY}vh`;
+                firefly.style.animation = `float ${durationFloat}s infinite ease-in-out ${delay}s, flash ${durationFlash}s infinite alternate ${delay}s`;
+                
+                container.appendChild(firefly);
+            }
+        }
+
+        // Render Functions
+        function renderStartPage() {
+            const html = `
+                <div class="glass-panel p-8 sm:p-12 rounded-2xl text-center fade-transition">
+                    <p class="text-sm tracking-[0.3em] text-gray-400 mb-4 uppercase">BabuLong Natural Mineral Water</p>
+                    <h1 class="text-3xl sm:text-5xl font-bold mb-6 leading-tight title-gradient glow-text">
+                        尋找你的內在微光
+                    </h1>
+                    <div class="space-y-4 text-gray-300 mb-10 leading-relaxed text-justify sm:text-center font-light">
+                        <p>閉上眼，聽聽這段跨越 4,500 年的聲音。</p>
+                        <p>那是雨水滲入玄武岩層的震動，是時光凝結出的純淨。</p>
+                        <p>在新竹大山背的水源地深處，螢火蟲正守護著這份自然的恩賜。</p>
+                        <p>而在這片漆黑中，也有一道光正因為你而悄悄亮起...</p>
+                    </div>
+                    <button onclick="startQuiz()" class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white rounded-full font-semibold tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:shadow-[0_0_30px_rgba(234,179,8,0.6)] transform hover:-translate-y-1">
+                        開始測驗
+                    </button>
+                </div>
+            `;
+            updateView(html);
+        }
+
+        function renderQuestion(index) {
+            const q = questions[index];
+            const progress = ((index + 1) / questions.length) * 100;
+            
+            let optionsHtml = '';
+            q.options.forEach(opt => {
+                optionsHtml += `
+                    <button onclick="selectOption('${opt.key}')" class="w-full text-left p-4 sm:p-5 rounded-xl glass-button mb-4 group relative overflow-hidden">
+                        <div class="flex items-start">
+                            <span class="text-yellow-500 font-bold mr-4 opacity-50 group-hover:opacity-100 transition-opacity">✦</span>
+                            <span class="text-gray-200 group-hover:text-white transition-colors tracking-wide leading-relaxed">${opt.text}</span>
+                        </div>
+                    </button>
+                `;
+            });
+
+            const html = `
+                <div class="glass-panel p-6 sm:p-10 rounded-2xl fade-transition">
+                    <!-- Progress -->
+                    <div class="mb-8">
+                        <div class="flex justify-between text-xs text-gray-400 mb-2 font-mono tracking-widest">
+                            <span>QUESTION 0${index + 1}</span>
+                            <span>0${questions.length}</span>
+                        </div>
+                        <div class="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-yellow-500 progress-bar shadow-[0_0_10px_rgba(234,179,8,0.8)]" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-xl sm:text-2xl font-semibold mb-8 leading-relaxed text-gray-100">
+                        ${q.question}
+                    </h2>
+                    
+                    <div class="space-y-2">
+                        ${optionsHtml}
+                    </div>
+                </div>
+            `;
+            updateView(html);
+        }
+
+        function renderLoading() {
+            const html = `
+                <div class="glass-panel p-12 rounded-2xl text-center fade-transition flex flex-col items-center justify-center min-h-[400px]">
+                    <div class="relative w-20 h-20 mb-8">
+                        <div class="absolute inset-0 border-t-2 border-yellow-500 rounded-full animate-spin"></div>
+                        <div class="absolute inset-2 border-r-2 border-emerald-500 rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-yellow-500 text-2xl">✦</div>
+                    </div>
+                    <h3 class="text-xl font-medium mb-3 text-gray-200 tracking-widest">正在感應你的微光頻率...</h3>
+                    <p class="text-sm text-gray-400 font-light">4500年的岩層時光正在收斂</p>
+                </div>
+            `;
+            updateView(html);
+            
+            setTimeout(() => {
+                renderResult();
+            }, 3000); // 3 seconds loading effect
+        }
+
+        function renderResult() {
+            // Calculate highest score
+            let maxScore = 0;
+            let resultKey = 'A';
+            for (const [key, value] of Object.entries(scores)) {
+                if (value > maxScore) {
+                    maxScore = value;
+                    resultKey = key;
+                }
+            }
+
+            const res = resultsData[resultKey];
+
+            const html = `
+                <div class="glass-panel p-8 sm:p-12 rounded-2xl fade-transition text-center relative overflow-hidden">
+                    <!-- Deco element -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-yellow-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20"></div>
+                    
+                    <p class="text-sm tracking-[0.2em] text-gray-400 mb-2 uppercase">Your Inner Glow</p>
+                    <h1 class="text-4xl sm:text-5xl font-bold mb-3 ${res.color} glow-text py-2">
+                        ${res.title}
+                    </h1>
+                    <div class="inline-block px-4 py-1 rounded-full bg-white/5 border border-white/10 text-sm tracking-widest mb-8 text-gray-300">
+                        ${res.symbol}
+                    </div>
+                    
+                    <div class="bg-black/30 p-6 rounded-xl border border-white/5 mb-8 text-left backdrop-blur-sm">
+                        <p class="text-gray-200 leading-loose font-light text-justify sm:text-center">${res.desc}</p>
+                    </div>
+
+                    <div class="mb-8 border-t border-b border-white/10 py-4">
+                        <p class="text-sm text-gray-400 mb-1">最契合您的精品水選擇</p>
+                        <p class="font-semibold text-lg text-white tracking-wide">${res.product}</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <button onclick="copyAndNotify('${res.ctaText}')" class="w-full px-8 py-4 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white rounded-xl font-semibold tracking-widest transition-all shadow-lg hover:shadow-yellow-500/30 flex justify-center items-center">
+                            <span>${res.ctaText}</span>
+                        </button>
+                        
+                        <button onclick="shareResult()" class="w-full px-8 py-4 bg-transparent border border-white/20 hover:bg-white/10 text-white rounded-xl font-medium tracking-widest transition-all flex justify-center items-center">
+                            <span class="mr-2">分享至 IG 限時動態</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.036 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/></svg>
+                        </button>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-6 cursor-pointer hover:text-gray-300" onclick="resetQuiz()">重新測驗</p>
+                </div>
+            `;
+            updateView(html);
+        }
+
+        // Logic Functions
+        function updateView(html) {
+            const el = appContainer.firstElementChild;
+            if (el) {
+                el.classList.replace('fade-in', 'fade-out');
+                setTimeout(() => {
+                    appContainer.innerHTML = html;
+                    // Trigger reflow
+                    void appContainer.offsetWidth;
+                    appContainer.firstElementChild.classList.add('fade-in');
+                }, 400);
+            } else {
+                appContainer.innerHTML = html;
+                appContainer.firstElementChild.classList.add('fade-in');
+            }
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            scores = { A: 0, B: 0, C: 0, D: 0 };
+            renderQuestion(currentQuestionIndex);
+        }
+
+        function selectOption(key) {
+            scores[key]++;
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                renderQuestion(currentQuestionIndex);
+            } else {
+                renderLoading();
+            }
+        }
+
+        function copyAndNotify(text) {
+            // Fake copy action for demo purposes
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="text-white">✓ 優惠碼已為您準備好，導向官網中...</span>`;
+            btn.classList.replace('from-yellow-600', 'from-emerald-600');
+            btn.classList.replace('to-yellow-500', 'to-emerald-500');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.replace('from-emerald-600', 'from-yellow-600');
+                btn.classList.replace('to-emerald-500', 'to-yellow-500');
+            }, 2000);
+        }
+
+        function shareResult() {
+            alert("已為您生成帶有專屬結果與品牌浮水印的限時動態圖片！(示範提示)");
+        }
+
+        function resetQuiz() {
+            renderStartPage();
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            createFireflies();
+            renderStartPage();
+        });
+    </script>
+</body>
+</html>
